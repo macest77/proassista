@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    volumes:
+      - ./app/:/var/www/symfony
+    ports:
+      - 8001:80
+    networks:
+      - symfony
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: mysql://root:root@mysql:3306/symfony_db?serverVersion=5.7
+    volumes:
+      - ./app/:/var/www/symfony/
+    networks:
+      - symfony
+    depends_on:
+      - db
+  db:
+    image: postgres:16-alpine
+    container_name: symfony_db
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d app" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - symfony
+
+networks:
+  symfony:
+
+volumes:
+  db_data:
