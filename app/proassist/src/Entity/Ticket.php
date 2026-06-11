@@ -2,6 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use App\Controller\TicketController;
 use App\Enum\TicketPrioriyuEnum;
 use App\Enum\TicketStatusEnum;
 use App\Repository\TicketRepository;
@@ -10,6 +18,22 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/tickets',
+            controller: TicketController::class . '::createTicket',
+        ),
+        new GetCollection(
+            uriTemplate: '/tickets',
+            controller: TicketController::class . '::list',
+        ),
+        new Get(
+            uriTemplate: '/tickets/{id}',
+            controller: TicketController::class . '::show',
+        ),
+    ]
+)]
 class Ticket
 {
     #[ORM\Id]
@@ -52,7 +76,9 @@ class Ticket
 
     public function __construct()
     {
-        $this->ticketHistories = new ArrayCollection();
+        $this->createdAt        = new \DateTimeImmutable();
+        $this->status           = TicketStatusEnum::NEW;
+        $this->ticketHistories  = new ArrayCollection();
     }
 
     public function getId(): ?int
