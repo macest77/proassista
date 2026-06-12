@@ -13,15 +13,19 @@ class Device
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['ticket:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 16)]
+    #[Groups(['ticket:read'])]
     private ?string $serialNumber = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['ticket:read'])]
     private ?string $model = null;
 
     #[ORM\Column(length: 30)]
+    #[Groups(['ticket:read'])]
     private ?string $customerName = null;
 
     #[ORM\Column]

@@ -6,6 +6,7 @@ use App\Repository\TechnicianRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TechnicianRepository::class)]
 class Technician
@@ -13,18 +14,23 @@ class Technician
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['ticket:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 30)]
+    #[Groups(['ticket:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['ticket:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['ticket:read'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(['ticket:read'])]
     private ?bool $active = null;
 
     /**

@@ -2,11 +2,11 @@
 
 up: ## Start containers
 	docker compose up -d
-	docker compose exec php sh -c "cd proassist && composer install && php bin/console doctrine:migrations:migrate --no-interaction"
+	docker compose exec php sh -c "cd proassist && composer install && php bin/console doctrine:migrations:migrate --no-interaction && php bin/console doctrine:fixtures:load --no-interaction"
 
 upRebuild:
 	docker compose up --build -d
-	docker compose exec php sh -c "cd proassist && composer install && php bin/console doctrine:migrations:migrate --no-interaction"
+	docker compose exec php sh -c "cd proassist && composer install && php bin/console doctrine:migrations:migrate --no-interaction && php bin/console doctrine:fixtures:load --no-interaction"
 
 down: ## Stop containers
 	docker compose down

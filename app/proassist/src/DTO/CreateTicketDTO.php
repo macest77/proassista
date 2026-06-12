@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-use App\Enum\TicketPrioriyuEnum;
+use App\Enum\TicketPriorityEnum;
 use App\Enum\TicketStatusEnum;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -16,7 +16,7 @@ final class CreateTicketDTO
     public readonly ?string $description;
 
     #[Assert\NotNull(message: 'Priority is required.')]
-    public readonly TicketPrioriyuEnum $priority;
+    public readonly TicketPriorityEnum $priority;
 
     #[Assert\NotNull(message: 'Status is required.')]
     public readonly TicketStatusEnum $status;
@@ -28,12 +28,12 @@ final class CreateTicketDTO
     public readonly ?string $device;
 
     public function __construct(
-        string  $title,
-        TicketPrioriyuEnum $priority,
+        string             $title,
+        TicketPriorityEnum $priority,
         TicketStatusEnum   $status,
-        ?string $description = null,
-        ?int    $assignedTechnician = null,
-        ?int    $device = null,
+        ?string            $description = null,
+        ?int               $assignedTechnician = null,
+        ?int               $device = null,
     ) {
         $this->title               = $title;
         $this->priority            = $priority;
@@ -47,7 +47,7 @@ final class CreateTicketDTO
     {
         return new self(
             title:              $data['title'] ?? '',
-            priority:           isset($data['priority']) ? TicketPrioriyuEnum::from($data['priority']) : TicketPrioriyuEnum::LOW,
+            priority:           isset($data['priority']) ? TicketPriorityEnum::from($data['priority']) : TicketPriorityEnum::LOW,
             status:             isset($data['status'])   ? TicketStatusEnum::from($data['status'])     : TicketStatusEnum::NEW,
             description:        $data['description']        ?? null,
             assignedTechnician: $data['assignedTechnician'] ?? null,

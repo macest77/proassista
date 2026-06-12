@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum TicketPrioriyuEnum: string {
+enum TicketPriorityEnum: string {
     case LOW        = 'low';
     case MEDIUM     = 'medium';
     case HIGH       = 'high';

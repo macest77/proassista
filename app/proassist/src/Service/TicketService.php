@@ -18,6 +18,11 @@ class TicketService
         private readonly DeviceRepository       $deviceRepository,
     ) {}
 
+    public function getAllTickets(): array
+    {
+        return $this->em->getRepository(Ticket::class)->findAll();
+    }
+
     /**
      * @throws \InvalidArgumentException
      */

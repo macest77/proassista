@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\TicketStatusEnum;
 use App\Repository\TicketHistoryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TicketHistoryRepository::class)]
@@ -28,6 +29,11 @@ class TicketHistory
 
     #[ORM\ManyToOne(inversedBy: 'ticketHistories')]
     private ?Technician $changedBy = null;
+
+    public function __construct()
+    {
+        $this->changedAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {

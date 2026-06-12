@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\DTO\CreateTicketDTO;
 use App\Entity\Ticket;
-use App\Enum\TicketPrioriyuEnum;
+use App\Enum\TicketPriorityEnum;
 use App\Enum\TicketStatusEnum;
 use App\Service\TicketService;
 use OpenApi\Attributes as OA;
@@ -27,10 +27,9 @@ final class TicketController extends AbstractController
     #[Route('', name: 'app_ticket')]
     public function index(): JsonResponse
     {
-        return $this->json([
-            'message    ' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/TicketController.php',
-        ]);
+        return $this->json(
+            array_map($this->serialize(...), $this->ticketService->getAllTickets()),
+            Response::HTTP_OK);
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -70,7 +69,7 @@ final class TicketController extends AbstractController
                 'error'   => 'Invalid enum value.',
                 'details' => $e->getMessage(),
                 'allowed' => [
-                    'priority' => array_column(TicketPrioriyuEnum::cases(), 'value'),
+                    'priority' => array_column(TicketPriorityEnum::cases(), 'value'),
                     'status'   => array_column(TicketStatusEnum::cases(),   'value'),
                 ],
             ], Response::HTTP_UNPROCESSABLE_ENTITY);

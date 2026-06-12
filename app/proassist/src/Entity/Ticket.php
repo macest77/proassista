@@ -10,15 +10,19 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Controller\TicketController;
-use App\Enum\TicketPrioriyuEnum;
+use App\Enum\TicketPriorityEnum;
 use App\Enum\TicketStatusEnum;
 use App\Repository\TicketRepository;
+use App\State\TicketCollectionProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ApiResource(
+    normalizationContext: ['groups' => ['ticket:read']],
+    denormalizationContext: ['groups' => ['ticket:write']],
     operations: [
         new Post(
             uriTemplate: '/tickets',
@@ -26,7 +30,7 @@ use Doctrine\ORM\Mapping as ORM;
         ),
         new GetCollection(
             uriTemplate: '/tickets',
-            controller: TicketController::class . '::list',
+            provider: TicketCollectionProvider::class,
         ),
         new Get(
             uriTemplate: '/tickets/{id}',
@@ -39,33 +43,43 @@ class Ticket
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['ticket:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?string $title = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?string $description = null;
 
-    #[ORM\Column(enumType: TicketPrioriyuEnum::class)]
-    private ?TicketPrioriyuEnum $priority = null;
+    #[ORM\Column(enumType: TicketPriorityEnum::class)]
+    #[Groups(['ticket:read', 'ticket:write'])]
+    private ?TicketPriorityEnum $priority = null;
 
     #[ORM\Column(enumType: TicketStatusEnum::class)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?TicketStatusEnum $status = null;
 
     #[ORM\Column]
+    #[Groups(['ticket:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?\DateTimeImmutable $closedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?Technician $assignedTechnician = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?Device $device = null;
 
     /**
@@ -110,12 +124,12 @@ class Ticket
         return $this;
     }
 
-    public function getPriority(): ?TicketPrioriyuEnum
+    public function getPriority(): ?TicketPriorityEnum
     {
         return $this->priority;
     }
 
-    public function setPriority(TicketPrioriyuEnum $priority): static
+    public function setPriority(TicketPriorityEnum $priority): static
     {
         $this->priority = $priority;
 
