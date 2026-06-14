@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
@@ -9,11 +10,16 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Response as OpenApiResponse;
 use App\Controller\TicketController;
 use App\Enum\TicketPriorityEnum;
 use App\Enum\TicketStatusEnum;
 use App\Repository\TicketRepository;
+use App\State\AssignTicketProcessor;
 use App\State\TicketCollectionProvider;
+use ArrayObject;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,8 +27,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ApiResource(
-    normalizationContext: ['groups' => ['ticket:read']],
-    denormalizationContext: ['groups' => ['ticket:write']],
     operations: [
         new Post(
             uriTemplate: '/tickets',
@@ -34,9 +38,52 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Get(
             uriTemplate: '/tickets/{id}',
-            controller: TicketController::class . '::show',
+            controller: TicketController::class . '::showTicket',
         ),
-    ]
+        new Patch(
+            uriTemplate: '/tickets/{id}',
+            controller: TicketController::class . '::editTicket',
+        ),
+        new Post(
+            uriTemplate: '/tickets/{id}/assign',
+            openapi: new OpenApiOperation(
+                tags: ['Tickets'],
+                responses: [
+                    '200' => new OpenApiResponse(description: 'Technician assigned successfully'),
+                    '403' => new OpenApiResponse(description: 'Access denied — requires ROLE_ADMIN'),
+                    '422' => new OpenApiResponse(description: 'Technician not found or not active'),
+                ],
+                summary: 'Assign a technician to a ticket',
+                description: 'Assigns an active technician to the ticket, sets status to ASSIGNED and saves history. Requires ROLE_ADMIN.',
+                requestBody: new RequestBody(
+                    description: 'Technician to assign',
+                    content: new ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type'       => 'object',
+                                'required'   => ['technicianId'],
+                                'properties' => [
+                                    'technicianId' => [
+                                        'type'        => 'integer',
+                                        'example'     => 5,
+                                        'description' => 'ID of the active technician to assign',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]),
+                ),
+            ),
+            security: 'is_granted("ROLE_ADMIN")',
+            securityMessage: 'Only admins can assign technicians.',
+            deserialize: false,
+            name: 'assign_technician',
+            provider: ItemProvider::class,
+            processor: AssignTicketProcessor::class,
+        ),
+    ],
+    normalizationContext: ['groups' => ['ticket:read']],
+    denormalizationContext: ['groups' => ['ticket:write']]
 )]
 class Ticket
 {

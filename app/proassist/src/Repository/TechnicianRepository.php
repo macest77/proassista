@@ -16,28 +16,40 @@ class TechnicianRepository extends ServiceEntityRepository
         parent::__construct($registry, Technician::class);
     }
 
-    //    /**
-    //     * @return Technician[] Returns an array of Technician objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findTechnicianPerformance(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
 
-    //    public function findOneBySomeField($value): ?Technician
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $sql = "
+        SELECT
+            t.id AS \"technicianId\",
+            t.first_name AS \"firstName\",
+            t.last_name AS \"lastName\",
+            COUNT(tk.id) AS \"closedTickets\",
+            COALESCE(
+                AVG(
+                    EXTRACT(EPOCH FROM (tk.closed_at - h.assigned_at)) / 3600
+                ),
+                0
+            ) AS \"averageClosingTimeHours\"
+        FROM technician t
+        LEFT JOIN ticket tk
+            ON tk.assigned_technician_id = t.id
+            AND tk.status IN ('DONE', 'CANCELLED')
+            AND tk.closed_at IS NOT NULL
+        LEFT JOIN (
+            SELECT
+                ticket_id,
+                MIN(changed_at) AS assigned_at
+            FROM ticket_history
+            WHERE new_status = 'ASSIGNED'
+            GROUP BY ticket_id
+        ) h ON h.ticket_id = tk.id
+        WHERE t.active = true
+        GROUP BY t.id, t.first_name, t.last_name
+        ORDER BY \"closedTickets\" DESC
+    ";
+
+        return $conn->executeQuery($sql)->fetchAllAssociative();
+    }
 }

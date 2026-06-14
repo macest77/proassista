@@ -9,26 +9,35 @@ use App\Enum\TicketPriorityEnum;
 use App\Enum\TicketStatusEnum;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    public function __construct(
+        private readonly UserPasswordHasherInterface $hasher,
+    ) {}
+
     public function load(ObjectManager $manager): void
     {
         // Technicians
         $technicians = [];
         $techData = [
-            ['Jan',     'Kowalski',  'jan.kowalski@example.com'],
-            ['Anna',    'Nowak',     'anna.nowak@example.com'],
-            ['Piotr',   'Wiśniewski','piotr.wisniewski@example.com'],
-            ['Katarzyna','Wójcik',   'katarzyna.wojcik@example.com'],
+            ['Jan',     'Kowalski',  'jan.kowalski@example.com',  ['ROLE_ADMIN']],
+            ['Anna',    'Nowak',     'anna.nowak@example.com',  []],
+            ['Piotr',   'Wiśniewski','piotr.wisniewski@example.com',  []],
+            ['Katarzyna','Wójcik',   'katarzyna.wojcik@example.com',  []],
         ];
 
-        foreach ($techData as [$first, $last, $email]) {
+        foreach ($techData as [$first, $last, $email, $roles]) {
             $tech = new Technician();
             $tech->setFirstName($first);
             $tech->setLastName($last);
             $tech->setEmail($email);
             $tech->setActive(true);
+            $tech->setRoles($roles);
+            $tech->setPassword(
+                $this->hasher->hashPassword($tech, 'password123')
+            );
             $manager->persist($tech);
             $technicians[] = $tech;
         }

@@ -32,5 +32,24 @@ class TicketHistoryDTO
         $this->changedBy = $changedBy;
         $this->oldStatus = $oldStatus;
         $this->newStatus = $newStatus;
+        $this->changedAt = (new \DateTimeImmutable());
+    }
+
+    public static function fromArray(array $data): self
+    {
+        $dto = self::from($data);
+        $dto->changedAt = (new \DateTimeImmutable());
+
+        return $dto;
+    }
+
+    private static function from(array $data): self
+    {
+        return new self(
+            ticket:               array_key_exists('title', $data)               ? $data['ticket']               : null,
+            oldStatus:            array_key_exists('oldStatus', $data)           ? $data['oldStatus']            : null,
+            newStatus:            array_key_exists('newStatus', $data)           ? $data['newStatus']            : null,
+            changedBy:            array_key_exists('changedBy', $data)           ? $data['changedBy']            : null,
+        );
     }
 }

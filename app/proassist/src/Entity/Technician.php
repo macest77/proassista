@@ -6,10 +6,12 @@ use App\Repository\TechnicianRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TechnicianRepository::class)]
-class Technician
+class Technician implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,13 +27,21 @@ class Technician
     #[Groups(['ticket:read'])]
     private ?string $lastName = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 100, unique: true)]
     #[Groups(['ticket:read'])]
     private ?string $email = null;
 
     #[ORM\Column]
     #[Groups(['ticket:read'])]
     private ?bool $active = null;
+
+    #[ORM\Column]
+    #[Groups(['ticket:read'])]
+    private array $roles = [];
+
+    #[ORM\Column]
+    #[Groups(['ticket:read'])]
+    private ?string $password = null;
 
     /**
      * @var Collection<int, Ticket>
@@ -103,6 +113,32 @@ class Technician
 
         return $this;
     }
+
+    // --- UserInterface ---
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        $roles[] = 'ROLE_TECHNICIAN'; // this default for every technician
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): ?string { return $this->password; }
+    public function setPassword(string $password): static { $this->password = $password; return $this; }
+
+    public function eraseCredentials(): void {}
+
 
     /**
      * @return Collection<int, Ticket>

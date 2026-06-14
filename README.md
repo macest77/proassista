@@ -1,21 +1,16 @@
-﻿# Docker setup for symfony
+﻿# API Platform application
 
-- PHP 8.2
-- MySQL 8.3
-- Nginx
+## Tickets management
 
-### Next step is
-- docker-compose up -d --build
-- docker exec -it symfony-docker\_php\_1 bash
-- cd ..
-- symfony new symfony --version="6.4.*" --webapp
+### Setup
 
-localhost:8001
+make up
 
-#### Hint on Windows:
-volumes in docker-compose.yml must be stored on main HDD 
-    volumes:
-      - C:\symfony:/var/www/symfony/
+options:
+.PHONY: up down downV upRebuild
+see Makefile for details
 
+Descriptions:
+http://localhost:8001/api/docs
 
-
+#### Marcin Stefański
